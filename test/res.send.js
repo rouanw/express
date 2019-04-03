@@ -576,6 +576,54 @@ describe('res', function(){
       })
     })
   })
+
+  describe('"authorization required" setting', function(){
+    describe('when enabled', function(){
+      it('should respond with 403 Forbidden when not authorized', function(done){
+        var app = express();
+        app.enable('requires authorization');
+
+        app.use(function(req, res){
+          res.send();
+        });
+
+        request(app)
+        .get('/')
+        .expect(403, done);
+      })
+
+      it('should skip the body when not authorized', function(done){
+        var app = express();
+        app.enable('requires authorization');
+
+        app.use(function(req, res){
+          res.send('hello');
+        });
+
+        request(app)
+        .get('/')
+        .expect(403)
+        .expect(shouldNotHaveBody())
+        .end(done);
+      })
+
+      it('should return as usual when authorized', function(done){
+        var app = express();
+        app.enable('requires authorization');
+
+        app.use(function(req, res){
+          req.authorized = true;
+          res.send('hello');
+        });
+
+        request(app)
+        .get('/')
+        .expect(200)
+        .expect('hello')
+        .end(done);
+      })
+    })
+  })
 })
 
 function shouldHaveBody (buf) {
